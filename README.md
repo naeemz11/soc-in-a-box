@@ -14,6 +14,6 @@ A scalable and deployable SOC environment with pre-configured security tools.
 ```sh
 git clone https://github.com/your-username/soc-in-a-box.git
 cd soc-in-a-box
-
+```
 ### Contributors: Brayden Greenfield, Naeem Zannatul, Rachel Wang, Brady Park
 
