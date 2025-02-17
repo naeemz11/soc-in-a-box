@@ -27,9 +27,12 @@ scp -r /home/brayden-g/splunk ${SSH_USER}@${VM_IP}:/home/${SSH_USER}/
 echo "[+] Install Splunk on Server"
 ssh -t ${SSH_USER}@${VM_IP} << EOF
   echo "[+] Checking if rsync is installed on server"
-  if [ ! command -v rsync &> /dev/null ]; then
+  
+  if ! command -v rsync &> /dev/null; then
     echo "[+] Installing rsync"
     sudo apt update -y && sudo apt install -y rsync
+  else
+    echo"[+] rsync is already installed"
   fi
 
   echo "[+] Adding splunk user"
