@@ -35,6 +35,9 @@ nano inventory.ini
 ```
 
 ## Create Test Playbook
+```bash
+nano playbook-test.yml
+```
 ```
 ---
 
