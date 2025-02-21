@@ -37,7 +37,7 @@ roles_path = /home/brayden-g/vulhub/roles:/home/brayden-g/.ansible/roles:/usr/sh
 ### Defaults folder
 In the defaults folder create a new file called main.yml
 ```
-nano main.yml
+nano defaults/main.yml
 ```
 ```
 ---
@@ -49,7 +49,7 @@ vulhub_envs:
 ### Tasks Folder
 Create a new file called main.yml in the Tasks Folder
 ```
-nano main.yml
+nano tasks/main.yml
 ```
 ```
 ---
@@ -100,10 +100,10 @@ nano main.yml
   ansible.builtin.shell: 
 ```
 
-### Main Folder
+### Meta Folder
 Create main.yml
 ```
-nano main.yml
+nano meta/main.yml
 ```
 ```
   # next line and provide a value
