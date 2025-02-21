@@ -26,6 +26,9 @@ ansible-galaxy install geerlingguy.docker --roles-path=~/vulhub/roles/
 mkdir vulhub
 ```
 ```
+cd vulhub
+```
+```
  mkdir defaults handlers meta tasks tests vars files templates roles
 ```
 ### Ansible.cfg
