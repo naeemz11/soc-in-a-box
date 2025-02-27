@@ -1,6 +1,6 @@
 ---
 
-- name: Install Nessus Essentials (Free) on Debian
+- name: Install Tenable Nessus on Debian
   hosts: tenableserver
   become: yes
   vars:
