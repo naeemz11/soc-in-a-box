@@ -1,0 +1,25 @@
+---
+
+- name: Install Nessus Essentials (Free) on Debian
+  hosts: tenableserver
+  become: yes
+  tasks:
+
+    - name: Download Nessus Package for Debian Server
+      get_url:
+        url: {{ tenable_download_url }}
+        dest: /tmp/Nessus.deb
+        mode: '0644'
+
+    - name: Install Nessus on Debian Server
+      command: dpkg -i /tmp/Nessus.deb
+
+    - name: Start and Enable Nessus
+      ansible.builtin.systemd_service:
+        name: nessusd
+        state: started
+        enabled: yes
+
+    - name: Display Nessus Web URL to User
+      debug:
+        msg: "Access Nessus at http://{{ ansible_default_ipv4.address }}:8834"
