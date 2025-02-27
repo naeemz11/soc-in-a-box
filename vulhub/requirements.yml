@@ -1,0 +1,6 @@
+---
+roles:
+  - name: geerlingguy.docker
+    src: https://github.com/geerlingguy/ansible-role-docker
+    version: master
+    path: /home/brayden-g/vulhub/roles/
