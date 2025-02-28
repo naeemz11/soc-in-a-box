@@ -1,0 +1,9 @@
+---
+- hosts: vulhub_hosts
+  become: true
+  roles:
+    - badsectorlabs.ludus_vulhub
+  vars:
+    vulhub_envs:
+      - confluence/CVE-2023-22527
+      - airflow/CVE-2020-11978
