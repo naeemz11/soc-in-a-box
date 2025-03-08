@@ -1,5 +1,8 @@
 ---
-- hosts: localhost
-  remote_user: root
+- hosts: forensics_machine_server
+  become: true
   roles:
     - dfir-station
+  vars:
+    velociraptor_admin_user: "admin"
+    velociraptor_admin_password: "password"

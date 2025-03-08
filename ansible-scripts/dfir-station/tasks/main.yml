@@ -1,2 +1,121 @@
 ---
 # tasks file for dfir-station
+
+# Wireshark
+- name: run apt-get update
+  apt:
+    update_cache: yes
+  become: yes
+
+- name: let non root to capture traffic
+  # Before installing any package, this only sets the preference for the question
+  debconf:
+    name='wireshark-common'
+    question='wireshark-common/install-setuid'
+    vtype='boolean'
+    value='true'
+  become: yes
+
+- name: install cli package
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ wireshark_cli_package }}"
+  when: wireshark_cli
+  become: yes
+
+- name: install gui package
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ wireshark_gui_package }}"
+  when: wireshark_gui
+  become: yes
+
+- name: add current user to wireshark group
+  user:
+    name: "{{ wireshark_user }}"
+    append: yes
+    groups: wireshark
+  become: yes
+
+# Velociraptor Server
+- name: "Create Velociraptor Directory"
+  ansible.builtin.file:
+    path: "{{ velociraptor_install_path }}"
+    state: directory
+    mode: '0644'
+
+- name: "Download Velociraptor Binary"
+  ansible.builtin.get_url:
+    url: "https://github.com/Velocidex/velociraptor/releases/download/{{ velociraptor_version }}/velociraptor-{{ velociraptor_version_patch }}-linux-amd64"
+    dest: "{{ velociraptor_install_path }}/velociraptor"
+    validate_certs: false
+    mode: '0644'
+
+- name: "Generate Velociraptor Server Config"
+  ansible.builtin.shell: "{{ velociraptor_install_path }}/velociraptor config generate --merge \
+      '{
+        \"Client\": {
+            \"server_urls\": [\"wss://{{ velociraptor_host }}:8000/\", \"https://{{ velociraptor_host }}:8000/\"],
+            \"use_self_signed_ssl\": true
+        },
+        \"API\": {
+            \"hostname\": \"{{ velociraptor_host }}\",
+            \"bind_address\": \"0.0.0.0\"
+        },
+        \"GUI\": {
+            \"bind_address\": \"0.0.0.0\",
+            \"public_url\": \"https://{{ velociraptor_host }}:8889/\"
+        },
+        \"Frontend\": {
+            \"hostname\": \"{{ velociraptor_host }}\",
+            \"bind_address\": \"0.0.0.0\"
+        }
+      }' > {{ velociraptor_install_path }}/server.config.yaml"
+  args:
+    creates: "{{ velociraptor_install_path }}/server.config.yaml"
+  register: server_config
+
+- name: "Split Server Config to Client Config"
+  ansible.builtin.shell: "{{ velociraptor_install_path }}/velociraptor config client --config {{ velociraptor_install_path }}/server.config.yaml > {{ velociraptor_install_path }}/client.config.yaml"
+  args:
+    creates: "{{ velociraptor_install_path }}/client.config.yaml"
+  register: client_config
+
+- name: "Register the Client Config"
+  ansible.builtin.slurp:
+    src: "{{ velociraptor_install_path }}/client.config.yaml"
+  register: "client_config_slurp"
+
+- name: "Generate Velociraptor Installation File"
+  ansible.builtin.shell: "{{ velociraptor_install_path }}/velociraptor debian server --config {{ velociraptor_install_path }}/server.config.yaml --output {{ velociraptor_install_path }}/velociraptor_server.deb"
+  args:
+    creates: "{{ velociraptor_install_path }}/velociraptor_server.deb"
+  register: server_installation_binary
+
+- name: "Install Velociraptor Server"
+  ansible.builtin.apt:
+    deb: "{{ velociraptor_install_path }}/velociraptor_server.deb"
+
+- name: "Add Admin User"
+  ansible.builtin.expect:
+    command: "sudo -u velociraptor velociraptor user add --role=administrator {{ velociraptor_admin_user }}"
+    responses:
+      (?i)Enter user's password: "{{ velociraptor_admin_password }}"
+
+- name: "Restart Velociraptor Service"
+  ansible.builtin.service:
+    name: velociraptor_server
+    state: restarted
+
+# Velociraptor Client
+- name: "Get the Velociraptor Client Config"
+  ansible.builtin.include_tasks:
+      file: get_client_config.yml
+      when: velociraptor_client_config == ""
+
+- name: "Setup Velociraptor Agent on Linux"
+  ansible.builtin.include_tasks:
+    file: install_linux.yml
+    when: ansible_os_family == "Ubuntu" or ansible_os_family == "Debian"
