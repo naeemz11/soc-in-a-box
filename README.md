@@ -8,6 +8,7 @@ A scalable and deployable SOC environment with pre-configured security tools. Th
 - **Log Forwarding**: Splunk Universal Forwarder  
 - **Forensics**: Wireshark, Velociraptor  
 - **Incident Response**: Splunk, Velociraptor 
+- **Vulnerability Management**: Openvas, Tenable 
 
 
 ## Installation
