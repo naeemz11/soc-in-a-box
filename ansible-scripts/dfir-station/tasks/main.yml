@@ -2,12 +2,12 @@
 # tasks file for dfir-station
 
 # Wireshark
-- name: run apt-get update
+- name: Run apt-get update
   apt:
     update_cache: yes
   become: yes
 
-- name: let non root to capture traffic
+- name: Allow non-root users to capture traffic
   debconf:
     name='wireshark-common'
     question='wireshark-common/install-setuid'
@@ -15,7 +15,7 @@
     value='true'
   become: yes
 
-- name: install cli package
+- name: Install CLI package
   apt:
     name: "{{ item }}"
     state: present
@@ -23,7 +23,7 @@
   when: wireshark_cli
   become: yes
 
-- name: install gui package
+- name: Install GUI package
   apt:
     name: "{{ item }}"
     state: present
@@ -39,7 +39,7 @@
   become: yes
 
 # Velociraptor Server
-- name: Download velociraptor binary
+- name: Download Velociraptor binary
   get_url:
     url: https://github.com/Velocidex/velociraptor/releases/download/v0.73/velociraptor-v0.73.1-linux-amd64
     dest: "{{ velociraptor_dir }}/velociraptor"
@@ -57,7 +57,7 @@
 - name: Create an empty Velociraptor config file if not present
   file:
     path: "{{ velociraptor_dir}}/velociraptor_server_config.yml"
-    state: touch # This creates an empty file if it doesn't exist
+    state: touch # Create an empty file if it doesn't exist
 
 - name: Check if Velociraptor config file exists
   stat:
