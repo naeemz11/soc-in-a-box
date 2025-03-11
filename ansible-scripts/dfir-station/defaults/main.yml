@@ -9,14 +9,14 @@ wireshark_gui_package: wireshark
 wireshark_cli_package: tshark
 
 # Velociraptor Server
-velociraptor_version: "v0.72"
-velociraptor_version_patch: "v0.72.0"
-
+velociraptor_version: "v0.73"
+velociraptor_version_patch: "v0.73.1"
+client: true
+server: true
+velociraptor_dir: /opt/velociraptor
+velociraptor_config_dir: /etc/velociraptor
+velociraptor_log_dir: /var/log/velociraptor
+velociraptor_server_config: velociraptor_server_config.yml
+velociraptor_client_config: velociraptor_config.yaml
 velociraptor_admin_user: "admin"
 velociraptor_admin_password: "pleasechangeme"
-
-velociraptor_host: "{{ ansible_default_ipv4.address }}"
-
-velociraptor_client_config: ""
-
-velociraptor_install_path: '/opt/velociraptor'

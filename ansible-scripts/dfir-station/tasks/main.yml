@@ -8,7 +8,6 @@
   become: yes
 
 - name: let non root to capture traffic
-  # Before installing any package, this only sets the preference for the question
   debconf:
     name='wireshark-common'
     question='wireshark-common/install-setuid'
