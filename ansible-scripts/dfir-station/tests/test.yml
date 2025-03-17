@@ -3,6 +3,3 @@
   become: true
   roles:
     - dfir-station
-  vars:
-    velociraptor_admin_user: "admin"
-    velociraptor_admin_password: "password"

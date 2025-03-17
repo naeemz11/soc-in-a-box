@@ -31,73 +31,124 @@
   when: wireshark_gui
   become: yes
 
-- name: add current user to wireshark group
+- name: Add current user to Wireshark group
   user:
     name: "{{ wireshark_user }}"
     append: yes
     groups: wireshark
   become: yes
 
-# Velociraptor Server
-- name: Download Velociraptor binary
-  get_url:
-    url: https://github.com/Velocidex/velociraptor/releases/download/v0.73/velociraptor-v0.73.1-linux-amd64
-    dest: "{{ velociraptor_dir }}/velociraptor"
-    mode: '0644'
+# Prepare System
+- name: Install CA Certificates (Debian-based systems)
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+    state: present
+  when: ansible_os_family == "Debian"
 
-- name: Make Velociraptor binary executable
-  command: chmod +x "{{ velociraptor_dir }}/velociraptor"
+- name: Install Required Packages
+  ansible.builtin.apt:
+    name:
+      - wget
+    state: present
 
-- name: Ensure the Velociraptor directory exists
-  file:
-    path: "{{ velociraptor_dir }}"
-    state: directory
-    mode: '0644'
+- name: Upgrade Kali Linux
+  ansible.builtin.apt:
+    upgrade: dist
+    update_cache: yes
 
-- name: Create an empty Velociraptor config file if not present
-  file:
-    path: "{{ velociraptor_dir}}/velociraptor_server_config.yml"
-    state: touch # Create an empty file if it doesn't exist
+- name: Check if Reboot Required
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+    get_checksum: no
+  register: reboot_required_file
 
-- name: Check if Velociraptor config file exists
-  stat:
-    path: "{{ velociraptor_dir }}/velociraptor_server_config.yml"
-  register: config_file_stat
+- name: Reboot Server if Required
+  ansible.builtin.reboot:
+  when: reboot_required_file.stat.exists == true
 
-- name: Generate Velociraptor config file if not present
-  shell: >
-    ./velociraptor config generate --merge
-    '{"autocert_domain": "domain.com", "autocert_cert_cache": "/foo/bar"}'
+# ----------- Fleet -----------
+- name: Download Fleet File Using wget
+  ansible.builtin.command: wget {{ fleet_download_link }} -O {{ fleet_output_file }}
+
+- name: Create Executable File For Fleet
+  ansible.builtin.file:
+    path: "{{ fleet_install_path }}"
+    owner: "root"
+    group: "root"
+    mode: 0755
+    state: touch
+
+- name: Extract Fleet Binary
+  command: tar -xf  {{ fleet_output_file }}
+
+- name: Copy Fleet Binary to /usr/local/bin
+  command: cp {{fleet_output_file }}/fleet /usr/local/bin/
   args:
-    chdir: "{{ velociraptor_dir }}"
-  when: not config_file_stat.stat.exists  # Only run if the config file does not exist
+    creates: /usr/local/bin/fleet
 
-- name: Check if Velociraptor server package exists
-  stat:
-    path: "{{ velociraptor_dir }}/velociraptor_server.deb"
-  register: deb_file_stat
-
-- name: Create Velociraptor server package (Debian) if not present
-  shell: >
-    ./velociraptor --config "{{ velociraptor_dir }}/velociraptor_server_config.yml" debian server --binary velociraptor-linux-amd64
+- name: Create Admin user
+  ansible.builtin.command:
+    argv:
+      - "sudo"
+      - "{{ fleet_output_file }}"
+      - "--config"
+      - "/etc/{{ fleet_output_file }}.config.yaml"
+      - "user"
+      - "add"
+      - "{{ fleet_admin_username }}"
+      - "{{ fleet_admin_password }}"
+      - "--role"
+      - "administrator"
   args:
-    chdir: "{{ velociraptor_dir }}"
-  when: not deb_file_stat.stat.exists  # Only run if the .deb file does not exist
+    chdir: "/home/{{ ansible_user }}"
 
-- name: Copy Velociraptor server package to remote server
+- name: Create fleet systemd service file
   copy:
-    src: "{{ velociraptor_dir }}/velociraptor_server.deb"
-    dest: /tmp/velociraptor_server.deb
-  delegate_to: 10.12.99.1  # Remote server IP
+    dest: /etc/systemd/system/fleet.service
+    content: |
+      [Unit]
+      Description=Fleet
+      After=network.target
 
-- name: Install Velociraptor package on remote server
-  become: yes
-  apt:
-    deb: /tmp/velociraptor_server.deb
-  delegate_to: 10.12.99.1  # Remote server IP
+      [Service]
+      User=fleet
+      Group=fleet
+      LimitNOFILE=8192
+      ExecStart=/usr/local/bin/fleet serve \
+        --mysql_address=127.0.0.1:3306 \
+        --mysql_database=fleet \
+        --mysql_username=root \
+        --mysql_password=toor \
+        --redis_address=127.0.0.1:6379 \
+        --server_cert=/tmp/server.cert \
+        --server_key=/tmp/server.key \
+        --logging_json
 
-- name: Clean up the .deb file from the remote server
-  file:
-    path: /tmp/velociraptor_server.deb
-    state: absent
-  delegate_to: 10.12.99.1  # Remote server IP
+      [Install]
+      WantedBy=multi-user.target
+    mode: '0644'
+
+- name: Move Fleet Service to systemd Directory
+  command: mv /usr/local/bin/fleet /etc/systemd/system/fleet.service
+
+- name: Unmask Fleet Service
+  command: systemctl unmask fleet.service
+
+- name: Start Fleet Service
+  command: systemctl start fleet.service
+
+- name: Check Status of Fleet Service
+  command: systemctl status fleet.service
+
+- name: Follow Fleet Service Logs
+  command: journalctl -u fleet.service -f
+
+- name: Reload systemd to Recognize New Service
+  ansible.builtin.command: systemctl daemon-reload
+
+- name: Enable and Start Fleet Service on Boot
+  systemd:
+    name: fleet
+    enabled: yes
+    state: started
