@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 ![SOC-in-a-Box](hero.png)
 
 # SOC-in-a-Box
