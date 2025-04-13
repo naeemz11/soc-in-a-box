@@ -1,9 +1,13 @@
-# Task to download, install and configure splunk-forwarder in kali 
 ---
 - name: Ensure APT cache is up-to-date
   ansible.builtin.apt:
     update_cache: true
   when: ansible_os_family == "Debian"
+
+- name: Install CA certificates (to fix SSL verification error)
+  ansible.builtin.package:
+    name: ca-certificates
+    state: present
 
 - name: Install dependencies
   ansible.builtin.package:
@@ -25,13 +29,13 @@
     rule: allow
     port: "{{ item }}"
     proto: tcp
-  with_items:
+  loop:
     - 8089  # Management Port
     - 9997  # Forwarding Port
 
 - name: Download Splunk Forwarder
   ansible.builtin.get_url:
-    url: "https://download.splunk.com/products/universalforwarder/releases/{{ splunk_forwarder_version }}/linux/{{ splunk_forwarder_package }}"    
+    url: "https://download.splunk.com/products/universalforwarder/releases/{{ splunk_forwarder_version }}/linux/{{ splunk_forwarder_package }}"
     dest: "/tmp/{{ splunk_forwarder_package }}"
     mode: "0644"
 
@@ -46,7 +50,7 @@
     name: "splunk"
     home: "/home/splunk"
     shell: "/bin/bash"
-    createhome: yes
+    create_home: yes
     state: present
 
 - name: Ensure Splunk home directory exists
@@ -75,9 +79,11 @@
     group: splunk
     mode: "0600"
   become: true
+
 - name: Restart Splunk Forwarder to apply user-seed.conf
   ansible.builtin.command:
-    cmd: "sudo -u splunk {{ splunk_forwarder_install_dir }}/bin/splunk restart --accept-license --no->  become: true
+    cmd: "sudo -u splunk {{ splunk_forwarder_install_dir }}/bin/splunk restart --accept-license --no-prompt"
+  become: true
   args:
     chdir: "{{ splunk_forwarder_install_dir }}"
   register: splunk_restart_output
@@ -91,6 +97,15 @@
     group: "splunk"
     mode: "0644"
   notify: Restart Splunk Forwarder
+
+- name: Deploy inputs.conf (Enable Linux log monitoring)
+  ansible.builtin.template:
+    src: "templates/inputs.conf.j2"
+    dest: "{{ splunk_forwarder_install_dir }}/etc/system/local/inputs.conf"
+    owner: "splunk"
+    group: "splunk"
+    mode: "0644"
+  notify: Restart Splunk Forwarde
 
 - name: Stop Splunk Forwarder before enabling boot-start (if running)
   ansible.builtin.command:

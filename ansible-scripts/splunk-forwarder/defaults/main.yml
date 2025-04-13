@@ -7,7 +7,7 @@ splunk_forwarder_user: "splunk"
 splunk_forwarder_group: "splunk"
 splunk_user: "admin"
 splunk_password: "password"
-splunk_search_head: "10.4.10.3"  # IP of the Splunk Search Head (change if neeeded)
+splunk_search_head: "10.7.10.3"  # IP of the Splunk Search Head (change if neeeded)
 splunk_forwarder_ports:
   - 8089  # Management Port
   - 9997  # Forwarding Port

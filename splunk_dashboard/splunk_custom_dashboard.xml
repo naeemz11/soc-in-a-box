@@ -1,0 +1,75 @@
+<form version="1.1" theme="dark">
+  <label>Soc-In-a-Box</label>
+  <fieldset submitButton="true" autoRun="false">
+    <input type="time" token="field1">
+      <label>Time Range</label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>socinabox</title>
+      <chart>
+        <title>Active Hosts</title>
+        <search>
+          <query>index="_internal" host=*
+| stats count by host
+| sort -count</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.drilldown">none</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>socinabox</title>
+      <single>
+        <title>Total Action</title>
+        <search>
+          <query>index="_internal" 
+| stats count by action
+| stats sum(count) as count</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>soxinabox</title>
+      <table>
+        <title>Host Log Level</title>
+        <search>
+          <query>index="_internal" host=* 
+| stats count by log_level
+| sort -count</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>socinabox</title>
+      <event>
+        <title>Internal Logs From All Hosts</title>
+        <search>
+          <query>index="_internal" host=*</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="list.drilldown">none</option>
+      </event>
+    </panel>
+  </row>
+</form>
