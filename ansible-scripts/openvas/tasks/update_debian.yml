@@ -1,4 +1,5 @@
 ---
+<<<<<<< HEAD
 - name: Update debian
   hosts: all
   become: true
@@ -41,3 +42,22 @@
     - name: Reboot the server (if required).
       ansible.builtin.reboot:
       when: reboot_required_file.stat.exists == true
+=======
+- name: Update Debian packages
+  hosts: openvas
+  become: true
+  tasks:
+    - name: Update APT cache
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Upgrade installed packages
+      ansible.builtin.apt:
+        upgrade: dist
+
+    - name: Autoremove unnecessary packages
+      ansible.builtin.apt:
+        autoremove: yes
+
+>>>>>>> 06909a331ddc061db3189fa3d0f767f50b40413a

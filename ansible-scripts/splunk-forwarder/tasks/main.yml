@@ -1,10 +1,21 @@
+<<<<<<< HEAD
 # Task to download, install and configure splunk-forwarder in kali 
+=======
+>>>>>>> 06909a331ddc061db3189fa3d0f767f50b40413a
 ---
 - name: Ensure APT cache is up-to-date
   ansible.builtin.apt:
     update_cache: true
   when: ansible_os_family == "Debian"
 
+<<<<<<< HEAD
+=======
+- name: Install CA certificates (to fix SSL verification error)
+  ansible.builtin.package:
+    name: ca-certificates
+    state: present
+
+>>>>>>> 06909a331ddc061db3189fa3d0f767f50b40413a
 - name: Install dependencies
   ansible.builtin.package:
     name:
@@ -25,13 +36,21 @@
     rule: allow
     port: "{{ item }}"
     proto: tcp
+<<<<<<< HEAD
   with_items:
+=======
+  loop:
+>>>>>>> 06909a331ddc061db3189fa3d0f767f50b40413a
     - 8089  # Management Port
     - 9997  # Forwarding Port
 
 - name: Download Splunk Forwarder
   ansible.builtin.get_url:
+<<<<<<< HEAD
     url: "https://download.splunk.com/products/universalforwarder/releases/{{ splunk_forwarder_version }}/linux/{{ splunk_forwarder_package }}"    
+=======
+    url: "https://download.splunk.com/products/universalforwarder/releases/{{ splunk_forwarder_version }}/linux/{{ splunk_forwarder_package }}"
+>>>>>>> 06909a331ddc061db3189fa3d0f767f50b40413a
     dest: "/tmp/{{ splunk_forwarder_package }}"
     mode: "0644"
 
@@ -46,7 +65,11 @@
     name: "splunk"
     home: "/home/splunk"
     shell: "/bin/bash"
+<<<<<<< HEAD
     createhome: yes
+=======
+    create_home: yes
+>>>>>>> 06909a331ddc061db3189fa3d0f767f50b40413a
     state: present
 
 - name: Ensure Splunk home directory exists
@@ -75,9 +98,17 @@
     group: splunk
     mode: "0600"
   become: true
+<<<<<<< HEAD
 - name: Restart Splunk Forwarder to apply user-seed.conf
   ansible.builtin.command:
     cmd: "sudo -u splunk {{ splunk_forwarder_install_dir }}/bin/splunk restart --accept-license --no->  become: true
+=======
+
+- name: Restart Splunk Forwarder to apply user-seed.conf
+  ansible.builtin.command:
+    cmd: "sudo -u splunk {{ splunk_forwarder_install_dir }}/bin/splunk restart --accept-license --no-prompt"
+  become: true
+>>>>>>> 06909a331ddc061db3189fa3d0f767f50b40413a
   args:
     chdir: "{{ splunk_forwarder_install_dir }}"
   register: splunk_restart_output

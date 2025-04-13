@@ -1,0 +1,29 @@
+---
+#[SEIM-VLAN]
+- name: Configuring Splunk Search Workstation on Debian
+  hosts: debian_splunk
+  become: true
+  roles:
+    - splunk-search
+
+#[USERS-VLAN]
+- name: Install and Configure Splunk Forwarder on kali
+  hosts: kali
+  become: true
+  roles:
+    - splunk-forwarder
+
+#[DMZ-VLAN]
+- name: Install and Configure Splunk Forwarder on debian
+  hosts: vulhub
+  become: true
+  roles:
+    - splunk-forwarder
+
+#[FORENSIC-VLAN]
+- name: Install and Configure Splunk Forwarder on debian
+  hosts: debian
+  become: true
+  roles:
+    - splunk-forwarder
+

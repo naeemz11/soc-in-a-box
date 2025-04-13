@@ -1,4 +1,5 @@
 ludus:
+<<<<<<< HEAD
 - vm_name: "{{ range_id }}-ad-dc-win2019-server-x64"
   hostname: "{{ range_id }}-DC01-2019"
   template: win2019-server-x64-template
@@ -41,6 +42,63 @@ ludus:
   template: win11-22h2-x64-enterprise-template
   vlan: 10
   ip_last_octet: 51
+=======
+#- vm_name: "{{ range_id }}-ad-dc-win2019-server-x64"
+#  hostname: "{{ range_id }}-DC01-2019"
+#  template: win2019-server-x64-template
+#  vlan: 10
+#  ip_last_octet: 50
+#  ram_gb: 8
+#  cpus: 4
+#  windows:
+#    sysprep: false
+#  testing:
+#    snapshot: false
+#    block_internet: false
+
+#- vm_name: "{{ range_id }}-kali"
+#  hostname: "{{ range_id }}-kali"
+#  template: kali-x64-desktop-template
+#  vlan: 99
+#  ip_last_octet: 1
+#  ram_gb: 8
+#  cpus: 4
+#  linux: true
+#  testing:
+#    snapshot: false
+#    block_internet: false
+
+#- vm_name: "{{ range_id }}-debian-server"
+#  hostname: "{{ range_id }}-debian-server"
+#  template: debian-12-x64-server-template
+#  vlan: 10
+#  ip_last_octet: 3
+#  ram_gb: 4
+#  cpus: 2
+#  linux: true
+#  testing:
+#    snapshot: false
+#    block_internet: false
+
+#- vm_name: "{{ range_id }}-ad-win11-22h2-enterprise-x64-1"
+#  hostname: "{{ range_id }}-win11-22H2-1"
+#  template: win11-22h2-x64-enterprise-template
+#  vlan: 10
+#  ip_last_octet: 51
+#  ram_gb: 8
+#  cpus: 4
+#  windows:
+#    sysprep: false
+#  testing:
+#    snapshot: false
+#    block_internet: false
+
+- vm_name: "{{ range_id }}-ad-win11-22h2-enterprise-x64-2"
+  hostname: "{{ range_id }}-win11-22H2-2"
+  template: win11-22h2-x64-enterprise-template
+  vlan: 10
+  ip_last_octet: 52
+>>>>>>> 06909a331ddc061db3189fa3d0f767f50b40413a
   ram_gb: 8
   cpus: 4
   windows:
@@ -49,6 +107,7 @@ ludus:
     snapshot: false
     block_internet: false
 
+<<<<<<< HEAD
 # Vulhub server
 # REMOVE INTERNET LATER ADDING IT FOR DEBUGGING PURPOSES!
 - vm_name: "{{ range_id }}-dmz-server"
@@ -76,6 +135,8 @@ ludus:
     snapshot: false
     block_internet: false
 
+=======
+>>>>>>> 06909a331ddc061db3189fa3d0f767f50b40413a
 network:
   inter_vlan_default: ACCEPT
   external_default: ACCEPT
